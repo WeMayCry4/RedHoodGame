@@ -29,7 +29,7 @@ public class Board extends JPanel implements ActionListener {
     private boolean inGame = false;
     private boolean dying = false;
 
-    private final int BLOCK_SIZE = 24;
+    private final int BLOCK_SIZE = 30;
     private final int N_BLOCKS = 15;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
     private final int PAC_ANIM_DELAY = 2;
@@ -54,15 +54,15 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private final short levelData[] = {
-            3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+                3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
 	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
 	            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
 	            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
 	            1, 25, 26, 26, 16, 24, 26, 16, 26, 24, 16, 26, 26, 28, 4,
-	            1, 0, 0, 0, 21, 0, 0, 21, 0, 0, 21, 0, 0, 0, 4,
-	            1, 19, 30, 0, 21, 0, 19, 0, 22, 0, 21, 0, 27, 22, 4,
-	            1, 21, 0, 0, 21, 0, 0, 0, 0, 0, 21, 0, 0, 21, 4,
-	            1, 17, 18, 26, 20, 0, 0, 0, 0, 0, 17, 26, 18, 20, 4,
+	            1, 1, 0, 0, 21, 3, 14, 21, 11, 6, 21, 0, 0, 4, 4,
+	            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
+	            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
+	            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
 	            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
 	            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
 	            1, 17, 28, 0, 25, 18, 18, 16, 18, 18, 28, 0, 25, 20, 4,
@@ -70,6 +70,7 @@ public class Board extends JPanel implements ActionListener {
 	            1, 25, 26, 30,8, 25, 24, 16, 24, 28, 8, 27, 26, 28, 4,
 	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
     };
+
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
@@ -173,9 +174,10 @@ public class Board extends JPanel implements ActionListener {
         s = "Score: " + score;
         g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
 
-        for (i = 0; i < pacsLeft; i++) {
+        /* for (i = 0; i < pacsLeft; i++) {
             g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
-        }
+        } */ 
+        // Visual for lives counter
     }
 
     private void checkMaze() {
@@ -469,7 +471,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        pacsLeft = 3;
+        pacsLeft = 1;
         score = 0;
         initLevel();
         N_GHOSTS = 6;
@@ -589,7 +591,7 @@ public class Board extends JPanel implements ActionListener {
                     req_dy = 1;
                 } else if (key == KeyEvent.VK_ESCAPE && timer.isRunning()) {
                     inGame = false;
-                } else if (key == KeyEvent.VK_PAUSE) {
+                } else if (key == KeyEvent.VK_SPACE) {
                     if (timer.isRunning()) {
                         timer.stop();
                     } else {
