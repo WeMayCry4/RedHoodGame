@@ -42,7 +42,7 @@ public class Board extends JPanel implements ActionListener {
     private int pacmanAnimPos = 0;
     private int N_GHOSTS = 4;
     private int level = 1; 
-    private int pacsLeft, score;
+    private int pacsLeft, score, highscore;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
@@ -54,27 +54,8 @@ public class Board extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
-    //map for level1
+    //map for level 1
     private final short levelData[] = {
-                3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
-	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
-	            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
-	            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
-	            1, 25, 26, 26, 16, 24, 26, 16, 26, 24, 16, 26, 26, 28, 4,
-	            1, 1, 0, 0, 21, 3, 14, 21, 11, 6, 21, 0, 0, 4, 4,
-	            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
-	            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
-	            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
-	            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
-	            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
-	            1, 17, 28, 0, 25, 18, 18, 16, 18, 18, 28, 0, 25, 20, 4,
-	            1, 21, 0, 0, 0, 17, 16, 16, 16, 20, 0, 0, 0, 21, 4,
-	            1, 25, 26, 30,8, 25, 24, 16, 24, 28, 8, 27, 26, 28, 4,
-	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
-    };
-    
-    //map for level2
-    private final short levelData2[] = {
     		19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
@@ -92,6 +73,44 @@ public class Board extends JPanel implements ActionListener {
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
 };
 
+    //map for level 2
+    private final short levelData2[] = {
+    		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+    	    1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
+    	    1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 16, 16, 16, 16, 16, 1, 1, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 4, 4, 4, 4, 16, 1, 0, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 4, 1, 1, 4, 16, 1, 0, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 4, 1, 1, 4, 16, 1, 0, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 4, 4, 4, 4, 16, 1, 0, 0, 2, 1,
+    	    1, 2, 0, 1, 16, 16, 16, 16, 16, 16, 1, 1, 0, 2, 1,
+    	    1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1,
+    	    1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
+    	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 1,
+    	    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    	    9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
+    };
+    
+    //map for level 3 and above
+    private final short levelData3[] = {
+                3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
+	            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
+	            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
+	            1, 25, 26, 26, 16, 24, 26, 16, 26, 24, 16, 26, 26, 28, 4,
+	            1, 1, 0, 0, 21, 3, 14, 21, 11, 6, 21, 0, 0, 4, 4,
+	            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
+	            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
+	            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
+	            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
+	            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
+	            1, 17, 28, 0, 25, 18, 18, 16, 18, 18, 28, 0, 25, 20, 4,
+	            1, 21, 0, 0, 0, 17, 16, 16, 16, 20, 0, 0, 0, 21, 4,
+	            1, 25, 26, 30,8, 25, 24, 16, 24, 28, 8, 27, 26, 28, 4,
+	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
+    };
+  
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
@@ -166,6 +185,11 @@ public class Board extends JPanel implements ActionListener {
             drawPacman(g2d);
             moveGhosts(g2d);
             checkMaze();
+            
+            if(highscore < score) 
+            {
+            	highscore = score;
+            }
         }
     }
 
@@ -190,13 +214,16 @@ public class Board extends JPanel implements ActionListener {
         int i;
         String s;
         String l;
+        String high;
 
         g.setFont(smallFont);
         g.setColor(new Color(96, 128, 255));
         s = "Score: " + score;
         l= "Level: "+ level;
+        high= "High Score: "+ highscore;
         g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
         g.drawString(l, 10, SCREEN_SIZE + 16 );
+        g.drawString(high, SCREEN_SIZE / 3 , SCREEN_SIZE + 16 );
 
         /* for (i = 0; i < pacsLeft; i++) {
             g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
@@ -519,6 +546,13 @@ public class Board extends JPanel implements ActionListener {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData2[i];
+            }
+        }
+        else 
+        {
+        	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
+        	{
+            screenData[i] = levelData3[i];
             }
         }
 
