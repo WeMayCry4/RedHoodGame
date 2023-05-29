@@ -29,23 +29,24 @@ public class Board extends JPanel implements ActionListener {
     private boolean inGame = false;
     private boolean dying = false;
 
-    private final int BLOCK_SIZE = 30;
+    private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
     private final int PAC_ANIM_DELAY = 2;
     private final int PACMAN_ANIM_COUNT = 4;
-    private final int MAX_GHOSTS = 12;
+    private final int MAX_GHOSTS = 10;
     private final int PACMAN_SPEED = 6;
 
     private int pacAnimCount = PAC_ANIM_DELAY;
     private int pacAnimDir = 1;
     private int pacmanAnimPos = 0;
-    private int N_GHOSTS = 6;
+    private int N_GHOSTS = 4;
+    private int level = 1; 
     private int pacsLeft, score;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image ghost;
+    private Image ghost,map;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -53,6 +54,7 @@ public class Board extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
+    //map for level1
     private final short levelData[] = {
                 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
 	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
@@ -70,6 +72,25 @@ public class Board extends JPanel implements ActionListener {
 	            1, 25, 26, 30,8, 25, 24, 16, 24, 28, 8, 27, 26, 28, 4,
 	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
     };
+    
+    //map for level2
+    private final short levelData2[] = {
+    		19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
+            21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
+            21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
+            21, 0, 0, 0, 17, 16, 16, 24, 16, 16, 16, 16, 16, 16, 20,
+            17, 18, 18, 18, 16, 16, 20, 0, 17, 16, 16, 16, 16, 16, 20,
+            17, 16, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 16, 24, 20,
+            25, 16, 16, 16, 24, 24, 28, 0, 25, 24, 24, 16, 20, 0, 21,
+            1, 17, 16, 20, 0, 0, 0, 0, 0, 0, 0, 17, 20, 0, 21,
+            1, 17, 16, 16, 18, 18, 22, 0, 19, 18, 18, 16, 20, 0, 21,
+            1, 17, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 20, 0, 21,
+            1, 17, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 20, 0, 21,
+            1, 17, 16, 16, 16, 16, 16, 18, 16, 16, 16, 16, 20, 0, 21,
+            1, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20, 0, 21,
+            1, 25, 24, 24, 24, 24, 24, 24, 24, 24, 16, 16, 16, 18, 20,
+            9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
+};
 
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
@@ -168,11 +189,14 @@ public class Board extends JPanel implements ActionListener {
 
         int i;
         String s;
+        String l;
 
         g.setFont(smallFont);
         g.setColor(new Color(96, 128, 255));
         s = "Score: " + score;
+        l= "Level: "+ level;
         g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
+        g.drawString(l, 10, SCREEN_SIZE + 16 );
 
         /* for (i = 0; i < pacsLeft; i++) {
             g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
@@ -195,11 +219,12 @@ public class Board extends JPanel implements ActionListener {
         }
 
         if (finished) {
-
+        	
             score += 50;
+            level++;
 
             if (N_GHOSTS < MAX_GHOSTS) {
-                N_GHOSTS++;
+                N_GHOSTS+=2;
             }
 
             if (currentSpeed < maxSpeed) {
@@ -208,6 +233,7 @@ public class Board extends JPanel implements ActionListener {
 
             initLevel();
         }
+        // when player clears the map,enemies become more and faster
     }
 
     private void death() {
@@ -289,7 +315,7 @@ public class Board extends JPanel implements ActionListener {
                     && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
                     && inGame) {
 
-                dying = true;
+                dying = true; //add invisibility feature here that checks if cloak is up and dying = false for certain amount of time
             }
         }
     }
@@ -474,15 +500,26 @@ public class Board extends JPanel implements ActionListener {
         pacsLeft = 1;
         score = 0;
         initLevel();
-        N_GHOSTS = 6;
+        N_GHOSTS = 4;
         currentSpeed = 3;
     }
 
     private void initLevel() {
 
         int i;
-        for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
+        if(level==1)
+        {
+        	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
+        	{
             screenData[i] = levelData[i];
+            }
+        }
+        else if(level == 2) 
+        {
+        	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
+        	{
+            screenData[i] = levelData2[i];
+            }
         }
 
         continueLevel();
@@ -523,6 +560,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void loadImages() {
 
+    	map = new ImageIcon("src/resources/images/map.jpg").getImage();
         ghost = new ImageIcon("src/resources/images/ghost.png").getImage();
         pacman1 = new ImageIcon("src/resources/images/pacman.png").getImage();
         pacman2up = new ImageIcon("src/resources/images/up1.png").getImage();
