@@ -1,3 +1,4 @@
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,6 +30,12 @@ public class Board extends JPanel implements ActionListener {
     private boolean inGame = false;
     private boolean dying = false;
 
+    private static final int DURATION = 5000; // 5 seconds in milliseconds
+    private int invisibilityTimeLeft = 0;
+    
+    private Timer invisibilityTimer;
+    private boolean invOn;
+
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
@@ -55,7 +62,7 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     //map for level 1
-    private final short levelData[] = {
+    private final short levelData3[] = {
     		19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
@@ -93,7 +100,7 @@ public class Board extends JPanel implements ActionListener {
     };
     
     //map for level 3 and above
-    private final short levelData3[] = {
+    private final short levelData[] = {
                 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
 	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
 	            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
@@ -105,13 +112,12 @@ public class Board extends JPanel implements ActionListener {
 	            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
 	            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
 	            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
-	            1, 17, 28, 0, 25, 18, 18, 16, 18, 18, 28, 0, 25, 20, 4,
-	            1, 21, 0, 0, 0, 17, 16, 16, 16, 20, 0, 0, 0, 21, 4,
-	            1, 25, 26, 30,8, 25, 24, 16, 24, 28, 8, 27, 26, 28, 4,
+	            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 20, 4,
+	            1, 21, 0, 0, 0, 17, 20, 15, 17, 20, 0, 0, 0, 21, 4,
+	            1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
 	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
     };
   
-
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
 
@@ -120,7 +126,7 @@ public class Board extends JPanel implements ActionListener {
     private Timer timer;
 
     public Board() {
-
+    	
         loadImages();
         initVariables();
         initBoard();
@@ -135,6 +141,12 @@ public class Board extends JPanel implements ActionListener {
         setBackground(Color.black);
     }
 
+    private void startInvisibilityTimer() {
+        invOn = true;  // Pac-Man is now invisible
+        invisibilityTimeLeft = DURATION;
+        invisibilityTimer.restart();
+    }
+    
     private void initVariables() {
 
         screenData = new short[N_BLOCKS * N_BLOCKS];
@@ -147,7 +159,16 @@ public class Board extends JPanel implements ActionListener {
         ghostSpeed = new int[MAX_GHOSTS];
         dx = new int[4];
         dy = new int[4];
-
+        
+        invisibilityTimer = new Timer(DURATION, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                invOn = false;  // Turn off invisibility when the timer expires
+                invisibilityTimeLeft = 0;
+                invisibilityTimer.stop();
+            }
+        });
+        
         timer = new Timer(40, this);
         timer.start();
     }
@@ -180,9 +201,19 @@ public class Board extends JPanel implements ActionListener {
             death();
 
         } else {
-
+        	
+        	if (invisibilityTimeLeft > 0) {
+                // Draw Pac-Man as invisible or semi-transparent
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+            }
+        	
             movePacman();
             drawPacman(g2d);
+
+            if (invisibilityTimeLeft == 0) {
+                // Reset the composite for other drawings
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
             moveGhosts(g2d);
             checkMaze();
             
@@ -211,7 +242,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawScore(Graphics2D g) {
 
-        int i;
+        // int i;
         String s;
         String l;
         String high;
@@ -273,7 +304,7 @@ public class Board extends JPanel implements ActionListener {
         }
         continueLevel();
     }
-
+    
     private void moveGhosts(Graphics2D g2d) {
 
         short i;
@@ -340,13 +371,17 @@ public class Board extends JPanel implements ActionListener {
 
             if (pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
                     && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
-                    && inGame) {
-
-                dying = true; //add invisibility feature here that checks if cloak is up and dying = false for certain amount of time
+                    && inGame && invOn) {
+            	dying = false;
+            	//add invisibility feature here that checks if cloak is up and dying = false for certain amount of time
+            } else if(pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
+                    && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
+                    && inGame && !invOn) {
+            	dying = true;
             }
         }
     }
-
+    
     private void drawGhost(Graphics2D g2d, int x, int y) {
 
         g2d.drawImage(ghost, x, y, this);
@@ -617,17 +652,24 @@ public class Board extends JPanel implements ActionListener {
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    	
+    	super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.drawImage(map, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+        
+        if (inGame) {
+            doDrawing(g2d);
+        } else {
+            showIntroScreen(g2d);
+        }
 
-        doDrawing(g);
+        Toolkit.getDefaultToolkit().sync();
+        g2d.dispose();
     }
 
     private void doDrawing(Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
-
-        g2d.setColor(Color.black);
-        g2d.fillRect(0, 0, d.width, d.height);
 
         drawMaze(g2d);
         drawScore(g2d);
@@ -673,6 +715,8 @@ public class Board extends JPanel implements ActionListener {
                     } else {
                         timer.start();
                     }
+                } else if(key == KeyEvent.VK_TAB) {
+                	startInvisibilityTimer();
                 }
             } else {
                 if (key == 's' || key == 'S') {
@@ -697,7 +741,6 @@ public class Board extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         repaint();
     }
 }
