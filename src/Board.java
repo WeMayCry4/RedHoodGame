@@ -269,8 +269,8 @@ public class Board extends JPanel implements ActionListener {
 
         if (pacsLeft == 0) {
             inGame = false;
+            level = 1;
         }
-
         continueLevel();
     }
 
@@ -526,8 +526,8 @@ public class Board extends JPanel implements ActionListener {
 
         pacsLeft = 1;
         score = 0;
-        initLevel();
         N_GHOSTS = 4;
+        initLevel();
         currentSpeed = 3;
     }
 
@@ -536,6 +536,7 @@ public class Board extends JPanel implements ActionListener {
         int i;
         if(level==1)
         {
+        	N_GHOSTS = 4;	
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData[i];
@@ -543,6 +544,7 @@ public class Board extends JPanel implements ActionListener {
         }
         else if(level == 2) 
         {
+        	N_GHOSTS = 5;
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData2[i];
@@ -550,6 +552,7 @@ public class Board extends JPanel implements ActionListener {
         }
         else 
         {
+        	N_GHOSTS = 6;
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData3[i];
@@ -662,6 +665,7 @@ public class Board extends JPanel implements ActionListener {
                     req_dx = 0;
                     req_dy = 1;
                 } else if (key == KeyEvent.VK_ESCAPE && timer.isRunning()) {
+                	level = 1;
                     inGame = false;
                 } else if (key == KeyEvent.VK_SPACE) {
                     if (timer.isRunning()) {
