@@ -14,6 +14,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import java.util.TimerTask;
+
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -29,12 +31,10 @@ public class Board extends JPanel implements ActionListener {
 
     private boolean inGame = false;
     private boolean dying = false;
-
+    private static int invisibilityTimeLeft = 0;
     private static final int DURATION = 5000; // 5 seconds in milliseconds
-    private int invisibilityTimeLeft = 0;
-    
-    private Timer invisibilityTimer;
     private boolean invOn;
+
 
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
@@ -62,7 +62,7 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     //map for level 1
-    private final short levelData3[] = {
+    private final short levelData2[] = {
     		19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
@@ -81,7 +81,7 @@ public class Board extends JPanel implements ActionListener {
 };
 
     //map for level 2
-    private final short levelData2[] = {
+    private final short levelData3[] = {
     		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
     	    1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
@@ -140,12 +140,6 @@ public class Board extends JPanel implements ActionListener {
 
         setBackground(Color.black);
     }
-
-    private void startInvisibilityTimer() {
-        invOn = true;  // Pac-Man is now invisible
-        invisibilityTimeLeft = DURATION;
-        invisibilityTimer.restart();
-    }
     
     private void initVariables() {
 
@@ -160,17 +154,9 @@ public class Board extends JPanel implements ActionListener {
         dx = new int[4];
         dy = new int[4];
         
-        invisibilityTimer = new Timer(DURATION, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                invOn = false;  // Turn off invisibility when the timer expires
-                invisibilityTimeLeft = 0;
-                invisibilityTimer.stop();
-            }
-        });
-        
         timer = new Timer(40, this);
         timer.start();
+        
     }
 
     @Override
@@ -202,21 +188,31 @@ public class Board extends JPanel implements ActionListener {
 
         } else {
         	
-        	if (invisibilityTimeLeft > 0) {
-                // Draw Pac-Man as invisible or semi-transparent
+        	if (invOn) {
+                // Reset the composite for other drawings
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
-            }
-        	
-            movePacman();
-            drawPacman(g2d);
-
-            if (invisibilityTimeLeft == 0) {
+                
+                movePacman();
+                
+                // Draw Pac-Man with full opacity
+                drawPacman(g2d);
+                
+                // Set composite for ghosts to make them opaque
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+                
+                moveGhosts(g2d);
+                checkMaze();
+                
                 // Reset the composite for other drawings
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            } else {
+                movePacman();
+                moveGhosts(g2d);
+                checkMaze();
+                
+                drawPacman(g2d);
             }
-            moveGhosts(g2d);
-            checkMaze();
-            
+        	
             if(highscore < score) 
             {
             	highscore = score;
@@ -231,13 +227,17 @@ public class Board extends JPanel implements ActionListener {
         g2d.setColor(Color.white);
         g2d.drawRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
 
-        String s = "Press s to start.";
+        String s = "Press S to start.";
+        String p = "Click SPACE BAR to pause";
+        String e = "For 50 points,E activates invisibility ";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
         g2d.setColor(Color.white);
         g2d.setFont(small);
-        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2);
+        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2-16);
+        g2d.drawString(p, (SCREEN_SIZE - metr.stringWidth(p)) / 2, SCREEN_SIZE / 2);
+        g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2+16);
     }
 
     private void drawScore(Graphics2D g) {
@@ -246,16 +246,25 @@ public class Board extends JPanel implements ActionListener {
         String s;
         String l;
         String high;
+        String inv;
 
         g.setFont(smallFont);
         g.setColor(new Color(96, 128, 255));
         s = "Score: " + score;
         l= "Level: "+ level;
         high= "High Score: "+ highscore;
-        g.drawString(s, SCREEN_SIZE / 2 + 96, SCREEN_SIZE + 16);
-        g.drawString(l, 10, SCREEN_SIZE + 16 );
-        g.drawString(high, SCREEN_SIZE / 3 , SCREEN_SIZE + 16 );
+        if(invOn) 
+        {
+        	inv = "Invisibility: ON";
+        }else 
+        {
+        	inv = "Invisibility: OFF";
+        }
 
+        g.drawString(s, SCREEN_SIZE - 70, SCREEN_SIZE + 16);
+        g.drawString(l, 0, SCREEN_SIZE + 16 );
+        g.drawString(high, SCREEN_SIZE / 3 + 65 , SCREEN_SIZE + 16 );
+        g.drawString(inv, SCREEN_SIZE / 3 - 55 , SCREEN_SIZE + 16 );
         /* for (i = 0; i < pacsLeft; i++) {
             g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
         } */ 
@@ -371,13 +380,28 @@ public class Board extends JPanel implements ActionListener {
 
             if (pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
                     && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
-                    && inGame && invOn) {
-            	dying = false;
+                    && inGame) {
+            	if(invOn) 
+            	{
+            	    dying = false;
+            	    Timer timer = new Timer(5000, new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            // Code to be executed after 5 seconds
+                            invOn = false;
+                            
+                       }
+                    });
+            	    timer.setRepeats(false); // Only execute the timer once
+            	    
+            	    // Start the timer
+                    timer.start();
+                    
+            	    // return dying = true or invOn = false when timer is 0
+            	}
+            	else {
+            		dying = true;
+            	}
             	//add invisibility feature here that checks if cloak is up and dying = false for certain amount of time
-            } else if(pacman_x > (ghost_x[i] - 12) && pacman_x < (ghost_x[i] + 12)
-                    && pacman_y > (ghost_y[i] - 12) && pacman_y < (ghost_y[i] + 12)
-                    && inGame && !invOn) {
-            	dying = true;
             }
         }
     }
@@ -571,7 +595,6 @@ public class Board extends JPanel implements ActionListener {
         int i;
         if(level==1)
         {
-        	N_GHOSTS = 4;	
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData[i];
@@ -579,7 +602,6 @@ public class Board extends JPanel implements ActionListener {
         }
         else if(level == 2) 
         {
-        	N_GHOSTS = 5;
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData2[i];
@@ -587,7 +609,6 @@ public class Board extends JPanel implements ActionListener {
         }
         else 
         {
-        	N_GHOSTS = 6;
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData3[i];
@@ -692,18 +713,18 @@ public class Board extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
 
             int key = e.getKeyCode();
-
+            
             if (inGame) {
-                if (key == KeyEvent.VK_LEFT) {
+                if (key == KeyEvent.VK_LEFT || key == 'a' || key == 'A') {
                     req_dx = -1;
                     req_dy = 0;
-                } else if (key == KeyEvent.VK_RIGHT) {
+                } else if (key == KeyEvent.VK_RIGHT || key == 'd' || key == 'D') {
                     req_dx = 1;
                     req_dy = 0;
-                } else if (key == KeyEvent.VK_UP) {
+                } else if (key == KeyEvent.VK_UP || key == 'w' || key == 'W') {
                     req_dx = 0;
                     req_dy = -1;
-                } else if (key == KeyEvent.VK_DOWN) {
+                } else if (key == KeyEvent.VK_DOWN || key == 's' || key == 'S' ) {
                     req_dx = 0;
                     req_dy = 1;
                 } else if (key == KeyEvent.VK_ESCAPE && timer.isRunning()) {
@@ -715,8 +736,20 @@ public class Board extends JPanel implements ActionListener {
                     } else {
                         timer.start();
                     }
-                } else if(key == KeyEvent.VK_TAB) {
-                	startInvisibilityTimer();
+                } else if(key == 'e' || key == 'E' && !invOn) {
+                	if(score > 50)
+                	{
+                		score-=50;
+                    	invOn = true;
+                    	Timer invTimer = new Timer(5000, new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                invOn = false; // Disable invincibility after 5 seconds
+                            }
+                        });
+                        invTimer.setRepeats(false);
+                        invTimer.start();
+                    }
                 }
             } else {
                 if (key == 's' || key == 'S') {
