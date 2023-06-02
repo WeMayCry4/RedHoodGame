@@ -33,7 +33,7 @@ public class Board extends JPanel implements ActionListener {
     private boolean dying = false;
     private static int invisibilityTimeLeft = 0;
     private static final int DURATION = 5000; // 5 seconds in milliseconds
-    private boolean invOn;
+    private boolean invOn,frzOn;
 
 
     private final int BLOCK_SIZE = 24;
@@ -42,7 +42,7 @@ public class Board extends JPanel implements ActionListener {
     private final int PAC_ANIM_DELAY = 2;
     private final int PACMAN_ANIM_COUNT = 4;
     private final int MAX_GHOSTS = 10;
-    private final int PACMAN_SPEED = 6;
+    private int PACMAN_SPEED = 6;
 
     private int pacAnimCount = PAC_ANIM_DELAY;
     private int pacAnimDir = 1;
@@ -61,8 +61,28 @@ public class Board extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
-    //map for level 1
-    private final short levelData2[] = {
+    //map for level 1 and 2
+    private final short levelData[] = {
+            3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
+            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
+            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
+            1, 25, 26, 26, 16, 24, 26, 24, 26, 24, 16, 26, 26, 28, 4,
+            1, 1, 0, 0, 21, 3, 14, 21, 13, 6, 21, 0, 0, 4, 4,
+            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
+            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
+            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
+            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
+            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
+            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 20, 4,
+            1, 21, 0, 0, 0, 17, 20, 15, 17, 20, 0, 0, 0, 21, 4,
+            1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
+            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
+};
+
+    
+    //map for level 3 and above
+    private final short levelData3[] = {
     		19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
             21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
@@ -80,8 +100,8 @@ public class Board extends JPanel implements ActionListener {
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
 };
 
-    //map for level 2
-    private final short levelData3[] = {
+    //map for level 5
+    private final short levelData5[] = {
     		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
     	    1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
@@ -99,24 +119,6 @@ public class Board extends JPanel implements ActionListener {
     	    9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
     };
     
-    //map for level 3 and above
-    private final short levelData[] = {
-                3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
-	            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
-	            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
-	            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
-	            1, 25, 26, 26, 16, 24, 26, 16, 26, 24, 16, 26, 26, 28, 4,
-	            1, 1, 0, 0, 21, 3, 14, 21, 11, 6, 21, 0, 0, 4, 4,
-	            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
-	            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
-	            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
-	            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
-	            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
-	            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 20, 4,
-	            1, 21, 0, 0, 0, 17, 20, 15, 17, 20, 0, 0, 0, 21, 4,
-	            1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
-	            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
-    };
   
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
@@ -189,8 +191,22 @@ public class Board extends JPanel implements ActionListener {
         } else {
         	
         	if (invOn) {
+                	pacman1 = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman2up = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman3up = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman4up = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman2down = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman3down = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman4down = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman2left = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman3left = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman4left = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman2right = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman3right = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman4right = new ImageIcon("src/resources/images/inv.png").getImage();
+
                 // Reset the composite for other drawings
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
                 
                 movePacman();
                 
@@ -223,13 +239,16 @@ public class Board extends JPanel implements ActionListener {
     private void showIntroScreen(Graphics2D g2d) {
 
         g2d.setColor(new Color(0, 32, 48));
-        g2d.fillRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
+        g2d.fillRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
         g2d.setColor(Color.white);
-        g2d.drawRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
+        g2d.drawRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
 
         String s = "Press S to start.";
         String p = "Click SPACE BAR to pause";
-        String e = "For 50 points,E activates invisibility ";
+        String e = "For 50 points,E activates invisibility";
+        String f = "For 100 points,F freezes wolves";
+        String r = "For 150 points,R kills a wolf";
+        String q = "For 200 points,Q increases speed";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
@@ -238,6 +257,9 @@ public class Board extends JPanel implements ActionListener {
         g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2-16);
         g2d.drawString(p, (SCREEN_SIZE - metr.stringWidth(p)) / 2, SCREEN_SIZE / 2);
         g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2+16);
+        g2d.drawString(f, (SCREEN_SIZE - metr.stringWidth(f)) / 2, SCREEN_SIZE / 2+32);
+        g2d.drawString(r, (SCREEN_SIZE - metr.stringWidth(r)) / 2, SCREEN_SIZE / 2+48);
+        g2d.drawString(q, (SCREEN_SIZE - metr.stringWidth(q)) / 2, SCREEN_SIZE / 2+64);
     }
 
     private void drawScore(Graphics2D g) {
@@ -247,24 +269,27 @@ public class Board extends JPanel implements ActionListener {
         String l;
         String high;
         String inv;
-
+        
         g.setFont(smallFont);
         g.setColor(new Color(96, 128, 255));
+        FontMetrics metr = this.getFontMetrics(smallFont);
+        
         s = "Score: " + score;
-        l= "Level: "+ level;
+        l= "Lvl: "+ level;
         high= "High Score: "+ highscore;
         if(invOn) 
         {
-        	inv = "Invisibility: ON";
+        	inv = "Inv: ON";
         }else 
         {
-        	inv = "Invisibility: OFF";
+        	inv = "Inv: OFF";
         }
-
-        g.drawString(s, SCREEN_SIZE - 70, SCREEN_SIZE + 16);
         g.drawString(l, 0, SCREEN_SIZE + 16 );
-        g.drawString(high, SCREEN_SIZE / 3 + 65 , SCREEN_SIZE + 16 );
-        g.drawString(inv, SCREEN_SIZE / 3 - 55 , SCREEN_SIZE + 16 );
+        g.drawString(inv, metr.stringWidth(l) + 15, SCREEN_SIZE + 16 );
+        
+        g.drawString(s, SCREEN_SIZE - (metr.stringWidth(s) + metr.stringWidth(high) + 15), SCREEN_SIZE + 16 );
+        g.drawString(high, SCREEN_SIZE - metr.stringWidth(high) , SCREEN_SIZE + 16 );
+        
         /* for (i = 0; i < pacsLeft; i++) {
             g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
         } */ 
@@ -402,6 +427,24 @@ public class Board extends JPanel implements ActionListener {
             		dying = true;
             	}
             	//add invisibility feature here that checks if cloak is up and dying = false for certain amount of time
+            	
+            	if(frzOn) {
+            	for (i = 0; i < N_GHOSTS; i++) {
+            		ghostSpeed[i] = 0;
+            	}
+            	Timer frzTimer = new Timer(5000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        frzOn = false; // Disable after 5 seconds
+                        for (int i = 0; i < N_GHOSTS; i++) {
+                        	
+                        ghostSpeed[i] = currentSpeed;
+                        }
+                    }
+                });
+                frzTimer.setRepeats(false);
+                frzTimer.start();
+            }
             }
         }
     }
@@ -584,34 +627,37 @@ public class Board extends JPanel implements ActionListener {
     private void initGame() {
 
         pacsLeft = 1;
-        score = 0;
+        score = 1000;
         N_GHOSTS = 4;
         initLevel();
         currentSpeed = 3;
+        for (int i = 0; i < N_GHOSTS; i++) {
+        	ghostSpeed[i] = currentSpeed;
+        }
     }
 
     private void initLevel() {
 
         int i;
-        if(level==1)
+        if(level==1 || level == 2)
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData[i];
             }
         }
-        else if(level == 2) 
+        else if(level == 3 || level == 4) 
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
-            screenData[i] = levelData2[i];
+            screenData[i] = levelData3[i];
             }
         }
         else 
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
-            screenData[i] = levelData3[i];
+            screenData[i] = levelData5[i];
             }
         }
 
@@ -654,21 +700,20 @@ public class Board extends JPanel implements ActionListener {
     private void loadImages() {
 
     	map = new ImageIcon("src/resources/images/map.jpg").getImage();
-        ghost = new ImageIcon("src/resources/images/ghost.png").getImage();
-        pacman1 = new ImageIcon("src/resources/images/pacman.png").getImage();
-        pacman2up = new ImageIcon("src/resources/images/up1.png").getImage();
-        pacman3up = new ImageIcon("src/resources/images/up2.png").getImage();
-        pacman4up = new ImageIcon("src/resources/images/up3.png").getImage();
-        pacman2down = new ImageIcon("src/resources/images/down1.png").getImage();
-        pacman3down = new ImageIcon("src/resources/images/down2.png").getImage();
-        pacman4down = new ImageIcon("src/resources/images/down3.png").getImage();
-        pacman2left = new ImageIcon("src/resources/images/left1.png").getImage();
-        pacman3left = new ImageIcon("src/resources/images/left2.png").getImage();
-        pacman4left = new ImageIcon("src/resources/images/left3.png").getImage();
-        pacman2right = new ImageIcon("src/resources/images/right1.png").getImage();
-        pacman3right = new ImageIcon("src/resources/images/right2.png").getImage();
-        pacman4right = new ImageIcon("src/resources/images/right3.png").getImage();
-
+        ghost = new ImageIcon("src/resources/images/ghost.jpg").getImage();
+       	pacman1 = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman3up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman4up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman2down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman3down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman4down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman2left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman3left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman4left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman2right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman3right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+            pacman4right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
     }
 
     @Override
@@ -676,7 +721,17 @@ public class Board extends JPanel implements ActionListener {
     	
     	super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(map, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+        
+        if(level == 1 || level == 2 )
+        {
+        	g2d.drawImage(map, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+        } else if (level == 3 && level == 4) 
+        {
+        	
+        } else 
+        {
+        	
+        }
         
         if (inGame) {
             doDrawing(g2d);
@@ -736,8 +791,24 @@ public class Board extends JPanel implements ActionListener {
                     } else {
                         timer.start();
                     }
-                } else if(key == 'e' || key == 'E' && !invOn) {
-                	if(score > 50)
+                } else if(key == 'q' || key == 'Q') 
+                {
+                	if(score >= 200)
+                	{
+                		score-=200;
+                		PACMAN_SPEED *=2;
+                    	Timer spdTimer = new Timer(5000, new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                            	PACMAN_SPEED /=2; // Disable invincibility after 5 seconds
+                            }
+                        });
+                        spdTimer.setRepeats(false);
+                        spdTimer.start();
+                    }
+                } 
+                else if(key == 'e' || key == 'E' && !invOn) {
+                	if(score >= 50)
                 	{
                 		score-=50;
                     	invOn = true;
@@ -750,7 +821,34 @@ public class Board extends JPanel implements ActionListener {
                         invTimer.setRepeats(false);
                         invTimer.start();
                     }
+                } else if(key == 'f' || key == 'F') {
+                	if(score >= 100)
+                	{
+                		score-=100;
+                	for (int i = 0; i < N_GHOSTS; i++) {
+                		ghostSpeed[i] = 0;
+                	}
+                	frzOn = true;
+                	Timer frzTimer = new Timer(5000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            frzOn = false; // Disable after 5 seconds
+                            for (int i = 0; i < N_GHOSTS; i++) {
+                            	
+                                ghostSpeed[i] = currentSpeed;
+                                }
+                        }
+                    });
+                    frzTimer.setRepeats(false);
+                    frzTimer.start();
                 }
+               } else if(key == 'r' || key == 'R') {
+               	if(score >= 150)
+               	{
+               		score-=150;
+               		N_GHOSTS--;
+               	}
+               }
             } else {
                 if (key == 's' || key == 'S') {
                     inGame = true;
