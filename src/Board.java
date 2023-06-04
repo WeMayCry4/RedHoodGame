@@ -191,19 +191,30 @@ public class Board extends JPanel implements ActionListener {
         gOver.ded(g);
     }
     public void gameWonScreen(Graphics g){
+    	g.drawImage(gameWonScreen, 0, 0, SCREEN_SIZE, SCREEN_SIZE + 1, this);
+    	Sound.StopBGMusic();
+    	Sound.RunBGMusic("src/resources/sounds/gameWon.wav");
+    	Timer soundTimer = new Timer(3000, new ActionListener() {
+    	      public void actionPerformed(ActionEvent e) {
+    	      Sound.StopBGMusic(); // Stop the sound effect after 3 seconds
+    	                }
+    	            });
+    	timer.setDelay(7500); // Set the delay between each action event to 1 millisecond
+    	timer.start(); // Start the timer
+
     	setBackground(Color.black);
     	Font font1 = new Font("Calibri", Font.BOLD,30);
         Font font2 = new Font("Verdana", Font.PLAIN, 18);
         g.setColor(Color.green);
     	g.setFont(font1);
     	String w = "You escaped the wolves!";
-        g.drawString(w, 25 , 25);
+        //g.drawString(w, 25 , 25);
     	g.setColor(Color.black);
     	g.setFont(font2);
         String h = "High Score: " + highscore;  
-        g.drawString(h, SCREEN_SIZE / 2 - 50 , 50);
+        //g.drawString(h, SCREEN_SIZE / 2 - 50 , 50);
         String z = "Press Esc to Start Over"; 
-        g.drawString(z, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE - 25 );
+        //g.drawString(z, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE - 25 );
         
         initGame();
         
@@ -272,10 +283,8 @@ public class Board extends JPanel implements ActionListener {
                 
                 if(level == 3) 
                 {
-                	g2d.drawImage(gameWonScreen, 0, 0, SCREEN_SIZE, SCREEN_SIZE + 20, this);
                 	gameWonScreen(g2d);
-                	Sound.StopBGMusic();
-                    Sound.RunBGMusic("src/resources/sounds/gameover.wav");
+                	
                 }
             }
                 int pacmanTile = screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)];
@@ -749,6 +758,7 @@ public class Board extends JPanel implements ActionListener {
 
         pacsLeft = 1;
         score = 0;
+        level = 3;
         N_GHOSTS = 4;
         initLevel();
         currentSpeed = 3;
