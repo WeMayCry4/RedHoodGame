@@ -37,7 +37,7 @@ public class Board extends JPanel implements ActionListener {
     private boolean gameOver = false;
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
-    private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
+    protected final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
     private final int PAC_ANIM_DELAY = 2;
     private final int PACMAN_ANIM_COUNT = 4;
     private final int MAX_GHOSTS = 10;
@@ -56,7 +56,7 @@ public class Board extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image ghost,map1,map2,map3,trap,health,gameOverScreen,appleImage,cookieImage;
+    private Image ghost,map1,map2,map3,trap,health,gameOverScreen,gameWonScreen,appleImage,cookieImage;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -66,7 +66,7 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     GameOver gOver = new GameOver();
-    
+    GameOver gWon = new GameOver();
     //map for level 1
     private final short levelData[] = {
             3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
@@ -190,14 +190,29 @@ public class Board extends JPanel implements ActionListener {
     public void gameOverScreen(Graphics g){
         gOver.ded(g);
     }
-    
+    public void gameWonScreen(Graphics g){
+    	setBackground(Color.black);
+    	Font font1 = new Font("Calibri", Font.BOLD,30);
+        Font font2 = new Font("Verdana", Font.PLAIN, 18);
+        g.setColor(Color.green);
+    	g.setFont(font1);
+    	String w = "You escaped the wolves!";
+        g.drawString(w, 25 , 25);
+    	g.setColor(Color.black);
+    	g.setFont(font2);
+        String h = "High Score: " + highscore;  
+        g.drawString(h, SCREEN_SIZE / 2 - 50 , 50);
+        String z = "Press S to Start Over"; 
+        g.drawString(z, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE - 25 );
+        
+    }
     private void playGame(Graphics2D g2d) {
 
         if (dying) {
 
             death();
             gameOverScreen(g2d);
-             Sound.StopBGMusic();
+            Sound.StopBGMusic();
             Sound.RunBGMusic("src/resources/sounds/gameover.wav");
         } else {
         	
@@ -252,6 +267,13 @@ public class Board extends JPanel implements ActionListener {
                 checkMaze();
                 drawPacman(g2d);
                 checkGhostTrapCollision();
+                
+                if(level == 3) 
+                {
+                	g2d.drawImage(gameWonScreen, 0, 0, SCREEN_SIZE, SCREEN_SIZE + 20, this);
+                	gameWonScreen(g2d);
+                	timer.stop();
+                }
             }
                 int pacmanTile = screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)];
                 if (pacmanTile == 19) { // Cookie tile
@@ -793,6 +815,7 @@ public class Board extends JPanel implements ActionListener {
     	appleImage = new ImageIcon("src/resources/images/appleImage.png").getImage();
     	cookieImage = new ImageIcon("src/resources/images/cookieImage.png").getImage();
     	gameOverScreen = new ImageIcon("src/resources/images/gameover.png").getImage();
+    	gameWonScreen = new ImageIcon("src/resources/images/gameWon.png").getImage();
     	map1 = new ImageIcon("src/resources/images/map1.jpg").getImage();
     	//map2 = new ImageIcon("src/resources/images/map2.jpg").getImage();
     	//map3 = new ImageIcon("src/resources/images/map3.jpg").getImage();
