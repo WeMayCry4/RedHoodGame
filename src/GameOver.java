@@ -21,9 +21,9 @@ public class GameOver implements ImageObserver {
     public void ded(Graphics p) {
     	Image gameOver = new ImageIcon("src/resources/images/gameover.png").getImage();
     	
-    	p.drawImage(gameOver,50,50,this);
-    	p.setColor(Color.WHITE);
-    	drawCenteredString(p, "Press the S to Start Over", 200, 350, 1, 1, font2);
+    	p.drawImage(gameOver,30,30,this);
+    	p.setColor(Color.red);
+    	drawCenteredString(p, "Press the S to Start Over", 180, 335, 1, 1, font2);
         
     	/*
         //Sets the gameover background
