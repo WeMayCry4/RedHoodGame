@@ -197,6 +197,8 @@ public class Board extends JPanel implements ActionListener {
 
             death();
             gameOverScreen(g2d);
+             Sound.StopBGMusic();
+            Sound.RunBGMusic("src/resources/sounds/gameover.wav");
         } else {
         	
         	if (invOn) {
@@ -950,6 +952,7 @@ public class Board extends JPanel implements ActionListener {
                 if (key == 's' || key == 'S') {
                     inGame = true;
                     initGame();
+                    Sound.RunBGMusic("src/resources/sounds/bgmusic.wav");
                 }
             }
         }
