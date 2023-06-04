@@ -758,7 +758,6 @@ public class Board extends JPanel implements ActionListener {
 
         pacsLeft = 1;
         score = 0;
-        level = 3;
         N_GHOSTS = 4;
         initLevel();
         currentSpeed = 3;
