@@ -35,7 +35,6 @@ public class GameOver implements ImageObserver {
             drawCenteredString(p, "Press the S to Continue", 250, 300, 1, 1, font2);
     */
     }
-
 	@Override
 	public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
 		// TODO Auto-generated method stub
