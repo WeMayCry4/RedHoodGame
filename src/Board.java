@@ -202,8 +202,10 @@ public class Board extends JPanel implements ActionListener {
     	g.setFont(font2);
         String h = "High Score: " + highscore;  
         g.drawString(h, SCREEN_SIZE / 2 - 50 , 50);
-        String z = "Press S to Start Over"; 
+        String z = "Press Esc to Start Over"; 
         g.drawString(z, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE - 25 );
+        
+        initGame();
         
     }
     private void playGame(Graphics2D g2d) {
@@ -272,7 +274,8 @@ public class Board extends JPanel implements ActionListener {
                 {
                 	g2d.drawImage(gameWonScreen, 0, 0, SCREEN_SIZE, SCREEN_SIZE + 20, this);
                 	gameWonScreen(g2d);
-                	timer.stop();
+                	Sound.StopBGMusic();
+                    Sound.RunBGMusic("src/resources/sounds/gameover.wav");
                 }
             }
                 int pacmanTile = screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)];
@@ -320,11 +323,12 @@ public class Board extends JPanel implements ActionListener {
 
     	String c = " Controls: ";
         String s = "Press S to start.";
-        String p = "Click SPACE BAR to pause";
-        String e = "For 50 points, E activates invisibility";
-        String f = "For 100 points, F freezes wolves";
-        String r = "Apples are 10 points";
-        String q = "Cookies are 20 points";
+        String p = "Click SPACE BAR to pause.";
+        String m = "Press M to mute or unmute.";
+        String e = "For 50 points, E activates invisibility.";
+        String f = "For 100 points, F freezes wolves.";
+        String r = "Apples are 10 points.";
+        String q = "Cookies are 20 points.";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         Font mid = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
@@ -337,8 +341,9 @@ public class Board extends JPanel implements ActionListener {
         g2d.drawString(q, (SCREEN_SIZE - metr.stringWidth(q)) / 2, 125);
         g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2 );
         g2d.drawString(p, (SCREEN_SIZE - metr.stringWidth(p)) / 2, SCREEN_SIZE / 2 + 25);
-        g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2 + 75);
-        g2d.drawString(f, (SCREEN_SIZE - metr.stringWidth(f)) / 2, SCREEN_SIZE / 2 + 100);
+        g2d.drawString(m, (SCREEN_SIZE - metr.stringWidth(m)) / 2, SCREEN_SIZE / 2 + 50);
+        g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2 + 100);
+        g2d.drawString(f, (SCREEN_SIZE - metr.stringWidth(f)) / 2, SCREEN_SIZE / 2 + 125);
         }
 
     private void drawScore(Graphics2D g) {
@@ -419,6 +424,8 @@ public class Board extends JPanel implements ActionListener {
 
         if (pacsLeft == 0) {
             inGame = false;
+            Sound.StopBGMusic();
+            Sound.RunBGMusic("src/resources/sounds/gameover.wav");
             gameOver = true;
             level = 1;
         }
@@ -907,11 +914,20 @@ public class Board extends JPanel implements ActionListener {
                 } else if (key == KeyEvent.VK_ESCAPE && timer.isRunning()) {
                 	level = 1;
                     inGame = false;
+                    Sound.StopBGMusic();
                 } else if (key == KeyEvent.VK_SPACE) {
                     if (timer.isRunning()) {
                         timer.stop();
+                        Sound.StopBGMusic();
                     } else {
                         timer.start();
+                        Sound.RunBGMusic("src/resources/sounds/bgmusic.wav");
+                    }
+                } else if (key == 'M' || key == 'm') {
+                    if (Sound.IsBGMusicPlaying()) {
+                        Sound.StopBGMusic();
+                    } else {
+                    	Sound.RunBGMusic("src/resources/sounds/bgmusic.wav");
                     }
                 } else if(key == 'q' || key == 'Q') 
                 {
