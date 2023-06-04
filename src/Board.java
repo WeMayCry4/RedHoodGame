@@ -43,13 +43,9 @@ public class Board extends JPanel implements ActionListener {
     private final int MAX_GHOSTS = 10;
     private int PACMAN_SPEED = 6;
 
-    private final int EMPTY = 0;
-    private final int APPLE = 1;
-    private final int COOKIE = 2;
-    private static final int APPLE_VALUE = 50;
-    private static final int COOKIE_VALUE = 100;
-
-    private int[] food;
+    private int numFirstAidKits = 1;
+    private int apples = 4;
+    private int cookie = 3;
 
     private int pacAnimCount = PAC_ANIM_DELAY;
     private int pacAnimDir = 1;
@@ -60,24 +56,25 @@ public class Board extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image ghost,map1,map2,map3,health,gameOverScreen,appleImage,cookieImage;
+    private Image ghost,map1,map2,map3,trap,health,gameOverScreen,appleImage,cookieImage;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
 
+    private int pointsRemaining;
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
     GameOver gOver = new GameOver();
     
-    //map for level 1 and 2
+    //map for level 1
     private final short levelData[] = {
-            3, 2, 10, 2, 2, 2, 2, 2, 10, 2, 2, 2, 2, 2, 6,
-            1, 4, 3, 26, 22, 0, 27, 2, 30, 0, 19, 26, 22, 0, 4,
+            3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+            1, 4, 3, 26, 22, 0, 27, 98, 30, 0, 19, 26, 22, 0, 4,
             1, 19, 28, 0, 17, 22, 0, 21, 0, 3, 4, 0, 25, 22, 4,
-            1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
-            1, 25, 26, 26, 16, 24, 26, 24, 26, 24, 16, 26, 26, 28, 4,
-            1, 1, 0, 0, 21, 3, 14, 2, 13, 6, 21, 0, 0, 4, 4,
+            1, 21, 0, 0, 17, 20, 0, 21, 0, 97, 20, 0, 0, 21, 4,
+            1, 25, 90, 26, 16, 24, 26, 24, 26, 24, 16, 26, 26, 28, 4,
+            1, 1, 0, 0, 21, 3, 14, 2, 3, 6, 21, 0, 0, 4, 4,
             1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
             1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
             1, 17, 18, 26, 4, 9, 8, 8, 8, 12, 17, 26, 18, 4, 4,
@@ -86,9 +83,26 @@ public class Board extends JPanel implements ActionListener {
             1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 4, 4,
             1, 21, 0, 0, 0, 17, 4, 15, 17, 4, 0, 0, 0, 21, 4,
             1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
-            9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
+            9, 8, 8, 8, 8, 8, 8, 13, 8, 8, 8, 8, 8, 8,12
 };
-
+    //map for level 2
+    private final short levelData2[] = {
+            3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+            1, 4, 3, 26, 22, 0, 27, 98, 30, 0, 19, 26, 22, 0, 4,
+            1, 19, 28, 0, 17, 22, 0, 21, 0, 3, 4, 0, 25, 22, 4,
+            1, 21, 0, 0, 17, 20, 0, 21, 0, 97, 20, 0, 0, 21, 4,
+            1, 25, 10, 26, 16, 24, 26, 24, 26, 24, 16, 26, 26, 28, 4,
+            1, 1, 0, 0, 21, 3, 14, 2, 3, 6, 21, 0, 0, 4, 4,
+            1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
+            1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
+            1, 17, 18, 90, 4, 9, 8, 8, 8, 12, 17, 26, 18, 4, 4,
+            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 4, 1, 100, 4,
+            1, 17, 16, 26, 4, 0, 0, 21, 0, 0, 17, 26, 16, 4, 4,
+            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 4, 4,
+            1, 21, 0, 0, 0, 17, 4, 15, 17, 4, 0, 0, 0, 21, 4,
+            1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
+            9, 8, 8, 8, 8, 8, 8, 13, 8, 8, 8, 8, 8, 8,12
+};
     
     //map for level 3 and above
     private final short levelData3[] = {
@@ -108,26 +122,6 @@ public class Board extends JPanel implements ActionListener {
             1, 25, 24, 24, 24, 24, 24, 24, 24, 24, 16, 16, 16, 18, 20,
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
 };
-
-    //map for level 5
-    private final short levelData5[] = {
-    		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
-    	    1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
-    	    1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 16, 16, 16, 16, 16, 1, 1, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 4, 4, 4, 4, 16, 1, 0, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 4, 1, 1, 4, 16, 1, 0, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 4, 1, 1, 4, 16, 1, 0, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 4, 4, 4, 4, 16, 1, 0, 0, 2, 1,
-    	    1, 2, 0, 1, 16, 16, 16, 16, 16, 16, 1, 1, 0, 2, 1,
-    	    1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1,
-    	    1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1,
-    	    1, 16, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 1,
-    	    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    	    9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
-    };
-    
   
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
@@ -150,6 +144,7 @@ public class Board extends JPanel implements ActionListener {
         setFocusable(true);
 
         setBackground(Color.black);
+        
     }
     
     private void initVariables() {
@@ -232,6 +227,7 @@ public class Board extends JPanel implements ActionListener {
                 
                 moveGhosts(g2d);
                 checkMaze();
+                checkGhostTrapCollision();
                 
                 // Reset the composite for other drawings
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
@@ -253,18 +249,36 @@ public class Board extends JPanel implements ActionListener {
                 moveGhosts(g2d);
                 checkMaze();
                 drawPacman(g2d);
+                checkGhostTrapCollision();
+            }
                 int pacmanTile = screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)];
                 if (pacmanTile == 19) { // Cookie tile
                     score += 20;
-                    //screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 0; // Remove the apple
+                    screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 3; // Remove the cookie
+                    cookie--;
+                    pointsRemaining--;
                 }
 
                 // Check if Pacman collects cookie
                 if (pacmanTile == 20) { // Apple tile
                     score += 10;
-                    //screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 0; // Remove the cookie
+                    screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 4; // Remove the apple
+                    apples--;
+                    pointsRemaining--;
                 }
-            }
+                if (pacmanTile == 98) { // First Aid Kit tile
+                	pacsLeft++;
+                    screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 2; // Remove the first aid kit
+                    numFirstAidKits--;
+                }
+                
+                if (pacmanTile == 100) { // Trap tile
+                	death();
+                    screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 4; // Remove the trap
+                }if (pacmanTile == 90) { // Trap tile
+                	death();
+                    screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 10; // Remove the trap
+                }
         	
             if(highscore < score) 
             {
@@ -275,29 +289,33 @@ public class Board extends JPanel implements ActionListener {
 
     private void showIntroScreen(Graphics2D g2d) {
 
-        g2d.setColor(new Color(0, 32, 48));
-        g2d.fillRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
-        g2d.setColor(Color.white);
-        g2d.drawRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
+        //g2d.setColor(new Color(0, 32, 48));
+        //g2d.fillRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
+        //g2d.setColor(Color.white);
+        //g2d.drawRect(50, SCREEN_SIZE / 2-30, SCREEN_SIZE - 100, 100);
 
+    	String c = " Controls: ";
         String s = "Press S to start.";
         String p = "Click SPACE BAR to pause";
-        String e = "For 50 points,E activates invisibility";
-        String f = "For 100 points,F freezes wolves";
-        String r = "Apples are 50 points";
-        String q = "Cookies are 100 points";
+        String e = "For 50 points, E activates invisibility";
+        String f = "For 100 points, F freezes wolves";
+        String r = "Apples are 10 points";
+        String q = "Cookies are 20 points";
         Font small = new Font("Helvetica", Font.BOLD, 14);
+        Font mid = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
-        g2d.setColor(Color.white);
+        g2d.setColor(Color.red);
         g2d.setFont(small);
-        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2-16);
-        g2d.drawString(p, (SCREEN_SIZE - metr.stringWidth(p)) / 2, SCREEN_SIZE / 2);
-        g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2+16);
-        g2d.drawString(f, (SCREEN_SIZE - metr.stringWidth(f)) / 2, SCREEN_SIZE / 2+32);
-        g2d.drawString(r, (SCREEN_SIZE - metr.stringWidth(r)) / 2, SCREEN_SIZE / 2+48);
-        g2d.drawString(q, (SCREEN_SIZE - metr.stringWidth(q)) / 2, SCREEN_SIZE / 2+64);
-    }
+        g2d.drawString(c, (SCREEN_SIZE - metr.stringWidth(c)) / 2, 50);
+        g2d.setColor(Color.white);
+        g2d.drawString(r, (SCREEN_SIZE - metr.stringWidth(r)) / 2, 100);
+        g2d.drawString(q, (SCREEN_SIZE - metr.stringWidth(q)) / 2, 125);
+        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2 );
+        g2d.drawString(p, (SCREEN_SIZE - metr.stringWidth(p)) / 2, SCREEN_SIZE / 2 + 25);
+        g2d.drawString(e, (SCREEN_SIZE - metr.stringWidth(e)) / 2, SCREEN_SIZE / 2 + 75);
+        g2d.drawString(f, (SCREEN_SIZE - metr.stringWidth(f)) / 2, SCREEN_SIZE / 2 + 100);
+        }
 
     private void drawScore(Graphics2D g) {
 
@@ -328,26 +346,32 @@ public class Board extends JPanel implements ActionListener {
         g.drawString(high, SCREEN_SIZE - metr.stringWidth(high) , SCREEN_SIZE + 16 );
         
         for (i = 0; i < pacsLeft-1; i++) {
-            g.drawImage(health, SCREEN_SIZE / 2 - 65 , SCREEN_SIZE, this);
+            g.drawImage(health, SCREEN_SIZE / 2 - 70 + i*25 , SCREEN_SIZE, this);
         } 
         // Visual for lives counter
     }
 
     private void checkMaze() {
 
-        short i = 0;
-        boolean finished = true;
+        int i = 0;
+        // boolean finished = true;
 
-        while (i < N_BLOCKS * N_BLOCKS && finished) {
+        /* while (i < N_BLOCKS * N_BLOCKS && finished) {
 
-            if ((screenData[i] & 48) != 0) {
+            if ((screenData[i] & 48) != 0 ) {
                 finished = false;
             }
             
             i++;
+        } */
+        pointsRemaining = 0;
+        for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
+            if (screenData[i] == 19 || screenData[i] == 20) {
+                pointsRemaining++;
+            }
         }
         
-        if (finished) {
+        if (pointsRemaining == 0) {
         	
             score += 50;
             level++;
@@ -375,6 +399,22 @@ public class Board extends JPanel implements ActionListener {
             level = 1;
         }
         continueLevel();
+    }
+
+    private void checkGhostTrapCollision() {
+        for (int i = 0; i < N_GHOSTS; i++) {
+            int ghostTile = screenData[ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE)];
+            if (ghostTile == 100) { // Trap tile
+                N_GHOSTS--;
+                screenData[ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE)] = 4; // Remove the trap
+                pointsRemaining--;
+            }
+            if (ghostTile == 90) { // Trap tile
+                N_GHOSTS--;
+                screenData[ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE)] = 26; // Remove the trap
+                pointsRemaining--;
+            }
+        }
     }
 
     private void moveGhosts(Graphics2D g2d) {
@@ -663,6 +703,10 @@ public class Board extends JPanel implements ActionListener {
                     g2d.drawImage(appleImage, x, y, this);
                 } else if (tile == 19) { // Cookie
                     g2d.drawImage(cookieImage, x, y, this);
+                } else if(tile == 98) {
+                	g2d.drawImage(health, x, y, this);
+                } else if(tile == 100 || tile == 90) {
+                	g2d.drawImage(trap, x, y, this);
                 }
 
                 i++;
@@ -672,38 +716,37 @@ public class Board extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        pacsLeft = 2;
+        pacsLeft = 1;
         score = 0;
         N_GHOSTS = 4;
         initLevel();
         currentSpeed = 3;
-        for (int i = 0; i < N_GHOSTS; i++) {
-        	ghostSpeed[i] = currentSpeed;
-        }
+        //for (int i = 0; i < N_GHOSTS; i++) {
+        	//ghostSpeed[i] = currentSpeed;
+        //}
     }
 
     private void initLevel() {
 
         int i;
-        if(level==1 || level == 2)
+        if(level==1)
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
             screenData[i] = levelData[i];
             }
-        }
-        else if(level == 3 || level == 4) 
+        } else if(level == 2)
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
-            screenData[i] = levelData3[i];
+            screenData[i] = levelData2[i];
             }
         }
         else 
         {
         	for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) 
         	{
-            screenData[i] = levelData5[i];
+            screenData[i] = levelData3[i];
             }
         }
 
@@ -719,7 +762,7 @@ public class Board extends JPanel implements ActionListener {
         for (i = 0; i < N_GHOSTS; i++) {
 
             ghost_y[i] = 4 * BLOCK_SIZE;
-            ghost_x[i] = 4 * BLOCK_SIZE;
+            ghost_x[i] = 7 * BLOCK_SIZE;
             ghost_dy[i] = 0;
             ghost_dx[i] = dx;
             dx = -dx;
@@ -733,7 +776,7 @@ public class Board extends JPanel implements ActionListener {
         }
 
         pacman_x = 7 * BLOCK_SIZE;
-        pacman_y = 11 * BLOCK_SIZE;
+        pacman_y = 14 * BLOCK_SIZE;
         pacmand_x = 0;
         pacmand_y = 0;
         req_dx = 0;
@@ -751,7 +794,8 @@ public class Board extends JPanel implements ActionListener {
     	map1 = new ImageIcon("src/resources/images/map1.jpg").getImage();
     	//map2 = new ImageIcon("src/resources/images/map2.jpg").getImage();
     	//map3 = new ImageIcon("src/resources/images/map3.jpg").getImage();
-    	health = new ImageIcon("src/resources/images/health.png").getImage();
+    	trap = new ImageIcon("src/resources/images/trap.png").getImage();
+       	health = new ImageIcon("src/resources/images/health.png").getImage();
        	ghost = new ImageIcon("src/resources/images/ghost.jpg").getImage();
        	pacman1 = new ImageIcon("src/resources/images/pacman.jpg").getImage();
         pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
