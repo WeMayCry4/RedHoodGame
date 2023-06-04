@@ -34,8 +34,7 @@ public class Board extends JPanel implements ActionListener {
     private static int invisibilityTimeLeft = 0;
     private static final int DURATION = 5000; // 5 seconds in milliseconds
     private boolean invOn,frzOn;
-
-
+    private boolean gameOver = false;
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
@@ -43,6 +42,14 @@ public class Board extends JPanel implements ActionListener {
     private final int PACMAN_ANIM_COUNT = 4;
     private final int MAX_GHOSTS = 10;
     private int PACMAN_SPEED = 6;
+
+    private final int EMPTY = 0;
+    private final int APPLE = 1;
+    private final int COOKIE = 2;
+    private static final int APPLE_VALUE = 50;
+    private static final int COOKIE_VALUE = 100;
+
+    private int[] food;
 
     private int pacAnimCount = PAC_ANIM_DELAY;
     private int pacAnimDir = 1;
@@ -53,7 +60,7 @@ public class Board extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image ghost,map;
+    private Image ghost,map1,map2,map3,health,gameOverScreen,appleImage,cookieImage;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -61,21 +68,23 @@ public class Board extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
+    GameOver gOver = new GameOver();
+    
     //map for level 1 and 2
     private final short levelData[] = {
-            3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
-            1, 0, 19, 26, 22, 0, 27, 18, 30, 0, 19, 26, 22, 0, 4,
-            1, 19, 28, 0, 17, 22, 0, 21, 0, 19, 20, 0, 25, 22, 4,
+            3, 2, 10, 2, 2, 2, 2, 2, 10, 2, 2, 2, 2, 2, 6,
+            1, 4, 3, 26, 22, 0, 27, 2, 30, 0, 19, 26, 22, 0, 4,
+            1, 19, 28, 0, 17, 22, 0, 21, 0, 3, 4, 0, 25, 22, 4,
             1, 21, 0, 0, 17, 20, 0, 21, 0, 17, 20, 0, 0, 21, 4,
             1, 25, 26, 26, 16, 24, 26, 24, 26, 24, 16, 26, 26, 28, 4,
-            1, 1, 0, 0, 21, 3, 14, 21, 13, 6, 21, 0, 0, 4, 4,
+            1, 1, 0, 0, 21, 3, 14, 2, 13, 6, 21, 0, 0, 4, 4,
             1, 19, 30, 0, 21, 5, 3, 0, 6, 5, 21, 0, 27, 22, 4,
             1, 21, 0, 0, 21, 1, 0, 0, 0, 4, 21, 0, 0, 21, 4,
-            1, 17, 18, 26, 20, 9, 8, 8, 8, 12, 17, 26, 18, 20, 4,
-            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 0, 17, 20, 4,
-            1, 17, 16, 26, 20, 0, 0, 21, 0, 0, 17, 26, 16, 20, 4,
-            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 20, 4,
-            1, 21, 0, 0, 0, 17, 20, 15, 17, 20, 0, 0, 0, 21, 4,
+            1, 17, 18, 26, 4, 9, 8, 8, 8, 12, 17, 26, 18, 4, 4,
+            1, 17, 20, 0, 17, 26, 26, 18, 26, 26, 20, 4, 1, 4, 4,
+            1, 17, 16, 26, 4, 0, 0, 21, 0, 0, 17, 26, 16, 4, 4,
+            1, 17, 28, 0, 25, 18, 18, 24, 18, 18, 28, 0, 25, 4, 4,
+            1, 21, 0, 0, 0, 17, 4, 15, 17, 4, 0, 0, 0, 21, 4,
             1, 25, 26, 30,8, 25, 24, 18, 24, 28, 8, 27, 26, 28, 4,
             9, 8, 8, 8, 8, 8, 8, 29, 8, 8, 8, 8, 8, 8,12
 };
@@ -156,6 +165,7 @@ public class Board extends JPanel implements ActionListener {
         dx = new int[4];
         dy = new int[4];
         
+
         timer = new Timer(40, this);
         timer.start();
         
@@ -173,21 +183,25 @@ public class Board extends JPanel implements ActionListener {
         pacAnimCount--;
 
         if (pacAnimCount <= 0) {
-            pacAnimCount = PAC_ANIM_DELAY;
+            pacAnimCount = 1000000; 
             pacmanAnimPos = pacmanAnimPos + pacAnimDir;
 
             if (pacmanAnimPos == (PACMAN_ANIM_COUNT - 1) || pacmanAnimPos == 0) {
                 pacAnimDir = -pacAnimDir;
-            }
-        }
+            } 
+        } 
+    } 
+    
+    public void gameOverScreen(Graphics g){
+        gOver.ded(g);
     }
-
+    
     private void playGame(Graphics2D g2d) {
 
         if (dying) {
 
             death();
-
+            gameOverScreen(g2d);
         } else {
         	
         	if (invOn) {
@@ -198,12 +212,12 @@ public class Board extends JPanel implements ActionListener {
                     pacman2down = new ImageIcon("src/resources/images/inv.png").getImage();
                     pacman3down = new ImageIcon("src/resources/images/inv.png").getImage();
                     pacman4down = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman2left = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman3left = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman4left = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman2right = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman3right = new ImageIcon("src/resources/images/inv.png").getImage();
-                    pacman4right = new ImageIcon("src/resources/images/inv.png").getImage();
+                    pacman2left = new ImageIcon("src/resources/images/inv1.png").getImage();
+                    pacman3left = new ImageIcon("src/resources/images/inv1.png").getImage();
+                    pacman4left = new ImageIcon("src/resources/images/inv1.png").getImage();
+                    pacman2right = new ImageIcon("src/resources/images/inv2.png").getImage();
+                    pacman3right = new ImageIcon("src/resources/images/inv2.png").getImage();
+                    pacman4right = new ImageIcon("src/resources/images/inv2.png").getImage();
 
                 // Reset the composite for other drawings
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
@@ -222,11 +236,34 @@ public class Board extends JPanel implements ActionListener {
                 // Reset the composite for other drawings
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             } else {
+            	pacman1 = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman3up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman4up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman2down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman3down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman4down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+                pacman2left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+                pacman3left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+                pacman4left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+                pacman2right = new ImageIcon("src/resources/images/pacman2.png").getImage();
+                pacman3right = new ImageIcon("src/resources/images/pacman2.png").getImage();
+                pacman4right = new ImageIcon("src/resources/images/pacman2.png").getImage();
                 movePacman();
                 moveGhosts(g2d);
                 checkMaze();
-                
                 drawPacman(g2d);
+                int pacmanTile = screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)];
+                if (pacmanTile == 19) { // Cookie tile
+                    score += 20;
+                    //screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 0; // Remove the apple
+                }
+
+                // Check if Pacman collects cookie
+                if (pacmanTile == 20) { // Apple tile
+                    score += 10;
+                    //screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 0; // Remove the cookie
+                }
             }
         	
             if(highscore < score) 
@@ -247,8 +284,8 @@ public class Board extends JPanel implements ActionListener {
         String p = "Click SPACE BAR to pause";
         String e = "For 50 points,E activates invisibility";
         String f = "For 100 points,F freezes wolves";
-        String r = "For 150 points,R kills a wolf";
-        String q = "For 200 points,Q increases speed";
+        String r = "Apples are 50 points";
+        String q = "Cookies are 100 points";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
@@ -264,7 +301,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawScore(Graphics2D g) {
 
-        // int i;
+        int i;
         String s;
         String l;
         String high;
@@ -290,9 +327,9 @@ public class Board extends JPanel implements ActionListener {
         g.drawString(s, SCREEN_SIZE - (metr.stringWidth(s) + metr.stringWidth(high) + 15), SCREEN_SIZE + 16 );
         g.drawString(high, SCREEN_SIZE - metr.stringWidth(high) , SCREEN_SIZE + 16 );
         
-        /* for (i = 0; i < pacsLeft; i++) {
-            g.drawImage(pacman3left, i * 28 + 8, SCREEN_SIZE + 1, this);
-        } */ 
+        for (i = 0; i < pacsLeft-1; i++) {
+            g.drawImage(health, SCREEN_SIZE / 2 - 65 , SCREEN_SIZE, this);
+        } 
         // Visual for lives counter
     }
 
@@ -306,10 +343,10 @@ public class Board extends JPanel implements ActionListener {
             if ((screenData[i] & 48) != 0) {
                 finished = false;
             }
-
+            
             i++;
         }
-
+        
         if (finished) {
         	
             score += 50;
@@ -334,11 +371,12 @@ public class Board extends JPanel implements ActionListener {
 
         if (pacsLeft == 0) {
             inGame = false;
+            gameOver = true;
             level = 1;
         }
         continueLevel();
     }
-    
+
     private void moveGhosts(Graphics2D g2d) {
 
         short i;
@@ -474,6 +512,7 @@ public class Board extends JPanel implements ActionListener {
                 screenData[pos] = (short) (ch & 15);
                 score++;
             }
+            
 
             if (req_dx != 0 || req_dy != 0) {
                 if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)
@@ -589,7 +628,7 @@ public class Board extends JPanel implements ActionListener {
 
         short i = 0;
         int x, y;
-
+        
         for (y = 0; y < SCREEN_SIZE; y += BLOCK_SIZE) {
             for (x = 0; x < SCREEN_SIZE; x += BLOCK_SIZE) {
 
@@ -618,6 +657,13 @@ public class Board extends JPanel implements ActionListener {
                     g2d.setColor(dotColor);
                     g2d.fillRect(x + 11, y + 11, 2, 2);
                 }
+                int tile = screenData[i];
+
+                if (tile == 20) { // Apple
+                    g2d.drawImage(appleImage, x, y, this);
+                } else if (tile == 19) { // Cookie
+                    g2d.drawImage(cookieImage, x, y, this);
+                }
 
                 i++;
             }
@@ -626,8 +672,8 @@ public class Board extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        pacsLeft = 1;
-        score = 1000;
+        pacsLeft = 2;
+        score = 0;
         N_GHOSTS = 4;
         initLevel();
         currentSpeed = 3;
@@ -699,21 +745,27 @@ public class Board extends JPanel implements ActionListener {
 
     private void loadImages() {
 
-    	map = new ImageIcon("src/resources/images/map.jpg").getImage();
-        ghost = new ImageIcon("src/resources/images/ghost.jpg").getImage();
+    	appleImage = new ImageIcon("src/resources/images/appleImage.png").getImage();
+    	cookieImage = new ImageIcon("src/resources/images/cookieImage.png").getImage();
+    	gameOverScreen = new ImageIcon("src/resources/images/gameover.png").getImage();
+    	map1 = new ImageIcon("src/resources/images/map1.jpg").getImage();
+    	//map2 = new ImageIcon("src/resources/images/map2.jpg").getImage();
+    	//map3 = new ImageIcon("src/resources/images/map3.jpg").getImage();
+    	health = new ImageIcon("src/resources/images/health.png").getImage();
+       	ghost = new ImageIcon("src/resources/images/ghost.jpg").getImage();
        	pacman1 = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman3up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman4up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman2down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman3down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman4down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman2left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman3left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman4left = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman2right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman3right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
-            pacman4right = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman3up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman4up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman2down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman3down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman4down = new ImageIcon("src/resources/images/pacman.jpg").getImage();
+        pacman2left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+        pacman3left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+        pacman4left = new ImageIcon("src/resources/images/pacman1.png").getImage();
+        pacman2right = new ImageIcon("src/resources/images/pacman2.png").getImage();
+        pacman3right = new ImageIcon("src/resources/images/pacman2.png").getImage();
+        pacman4right = new ImageIcon("src/resources/images/pacman2.png").getImage();
     }
 
     @Override
@@ -722,23 +774,24 @@ public class Board extends JPanel implements ActionListener {
     	super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         
-        if(level == 1 || level == 2 )
-        {
-        	g2d.drawImage(map, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
-        } else if (level == 3 && level == 4) 
-        {
-        	
-        } else 
-        {
-        	
-        }
-        
         if (inGame) {
+        	if(level == 1 || level == 2 )
+            {
+            	g2d.drawImage(map1, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+            } else if (level == 3 && level == 4) 
+            {
+            	g2d.drawImage(map2, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+            } else 
+            {
+            	g2d.drawImage(map3, 0, 0, SCREEN_SIZE, SCREEN_SIZE, this);
+            }
             doDrawing(g2d);
+        } else if(gameOver)
+        {
+        	gameOverScreen(g2d);
         } else {
             showIntroScreen(g2d);
         }
-
         Toolkit.getDefaultToolkit().sync();
         g2d.dispose();
     }
