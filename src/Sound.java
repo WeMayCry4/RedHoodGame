@@ -10,6 +10,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Sound {
+	static boolean isBGMusicPlaying = false;
 	static Clip clip;
 	public static void RunBGMusic(String path) {
 		try {
@@ -17,6 +18,7 @@ public class Sound {
 			clip = AudioSystem.getClip();
 			clip.open(inputStream);
 			clip.loop(0);
+			isBGMusicPlaying = true;
 		} catch (UnsupportedAudioFileException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -25,21 +27,12 @@ public class Sound {
 			e.printStackTrace();
 		}
 	}
-	public static void StopBGMusic() 
-	{ clip.stop();}
+	public static void StopBGMusic() { 
+		clip.stop();
+		isBGMusicPlaying = false;
+	}
+	public static boolean IsBGMusicPlaying() {
+        return isBGMusicPlaying;
+    }
 }
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
