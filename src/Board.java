@@ -56,7 +56,7 @@ public class Board extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
 
-    private Image ghost,map1,map2,map3,trap,health,gameOverScreen,gameWonScreen,appleImage,cookieImage;
+    private Image ghost,map1,map2,map3,trap,health,gameOverScreen,gameWonScreen,appleImage,cookieImage,cupCakeImage;
     private Image pacman1, pacman2up, pacman2left, pacman2right, pacman2down;
     private Image pacman3up, pacman3down, pacman3left, pacman3right;
     private Image pacman4up, pacman4down, pacman4left, pacman4right;
@@ -190,6 +190,7 @@ public class Board extends JPanel implements ActionListener {
     public void gameOverScreen(Graphics g){
         gOver.ded(g);
     }
+    
     public void gameWonScreen(Graphics g){
     	g.drawImage(gameWonScreen, 0, 0, SCREEN_SIZE, SCREEN_SIZE + 1, this);
     	Sound.StopBGMusic();
@@ -199,26 +200,29 @@ public class Board extends JPanel implements ActionListener {
     	      Sound.StopBGMusic(); // Stop the sound effect after 3 seconds
     	                }
     	            });
-    	timer.setDelay(7500); // Set the delay between each action event to 1 millisecond
+    	timer.setDelay(75000000); // Set the delay between each action event to 1 millisecond
     	timer.start(); // Start the timer
 
     	setBackground(Color.black);
-    	Font font1 = new Font("Calibri", Font.BOLD,30);
+    	//Font font1 = new Font("Calibri", Font.BOLD,30);
         Font font2 = new Font("Verdana", Font.PLAIN, 18);
-        g.setColor(Color.green);
-    	g.setFont(font1);
-    	String w = "You escaped the wolves!";
+        //g.setColor(Color.green);
+    	//g.setFont(font1);
+    	//String w = "You escaped the wolves!";
         //g.drawString(w, 25 , 25);
-    	g.setColor(Color.black);
+    	//g.setColor(Color.black);
     	g.setFont(font2);
-        String h = "High Score: " + highscore;  
+        //String h = "High Score: " + highscore;  
         //g.drawString(h, SCREEN_SIZE / 2 - 50 , 50);
-        String z = "Press Esc to Start Over"; 
-        //g.drawString(z, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE - 25 );
+        //String z = "Press Esc to Start Over"; 
+        g.setColor(Color.ORANGE);
+        String c = "Made by @WeMayCry4";
+        g.drawString(c, SCREEN_SIZE / 2 - 100 , SCREEN_SIZE + 35 );
         
         initGame();
         
     }
+    
     private void playGame(Graphics2D g2d) {
 
         if (dying) {
@@ -245,7 +249,7 @@ public class Board extends JPanel implements ActionListener {
                     pacman4right = new ImageIcon("src/resources/images/inv2.png").getImage();
 
                 // Reset the composite for other drawings
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
                 
                 movePacman();
                 
@@ -302,6 +306,11 @@ public class Board extends JPanel implements ActionListener {
                     apples--;
                     pointsRemaining--;
                 }
+                //if (pacmanTile == 18) { // CupCake tile
+                    
+                  //screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 4; // Remove the apple
+                    
+                //}
                 if (pacmanTile == 98) { // First Aid Kit tile
                 	pacsLeft++;
                     screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = 2; // Remove the first aid kit
@@ -339,13 +348,14 @@ public class Board extends JPanel implements ActionListener {
         String r = "Apples are 10 points.";
         String q = "Cookies are 20 points.";
         Font small = new Font("Helvetica", Font.BOLD, 14);
-        Font mid = new Font("Helvetica", Font.BOLD, 14);
+        Font mid = new Font("Helvetica", Font.BOLD, 16);
         FontMetrics metr = this.getFontMetrics(small);
 
         g2d.setColor(Color.red);
-        g2d.setFont(small);
+        g2d.setFont(mid);
         g2d.drawString(c, (SCREEN_SIZE - metr.stringWidth(c)) / 2, 50);
         g2d.setColor(Color.white);
+        g2d.setFont(small);
         g2d.drawString(r, (SCREEN_SIZE - metr.stringWidth(r)) / 2, 100);
         g2d.drawString(q, (SCREEN_SIZE - metr.stringWidth(q)) / 2, 125);
         g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2 );
@@ -377,12 +387,18 @@ public class Board extends JPanel implements ActionListener {
         {
         	inv = "Inv: OFF";
         }
+        
+        if(level == 3) 
+        {
+        	g.drawString(high, (SCREEN_SIZE - metr.stringWidth(high)) / 2 , SCREEN_SIZE + 16 );
+        }
+        else 
+        { 
         g.drawString(l, 0, SCREEN_SIZE + 16 );
         g.drawString(inv, metr.stringWidth(l) + 15, SCREEN_SIZE + 16 );
-        
         g.drawString(s, SCREEN_SIZE - (metr.stringWidth(s) + metr.stringWidth(high) + 15), SCREEN_SIZE + 16 );
         g.drawString(high, SCREEN_SIZE - metr.stringWidth(high) , SCREEN_SIZE + 16 );
-        
+        }
         for (i = 0; i < pacsLeft-1; i++) {
             g.drawImage(health, SCREEN_SIZE / 2 - 70 + i*25 , SCREEN_SIZE, this);
         } 
@@ -830,6 +846,7 @@ public class Board extends JPanel implements ActionListener {
 
     	appleImage = new ImageIcon("src/resources/images/appleImage.png").getImage();
     	cookieImage = new ImageIcon("src/resources/images/cookieImage.png").getImage();
+    	cupCakeImage = new ImageIcon("src/resources/images/cupCake.jpg").getImage();
     	gameOverScreen = new ImageIcon("src/resources/images/gameover.png").getImage();
     	gameWonScreen = new ImageIcon("src/resources/images/gameWon.png").getImage();
     	map1 = new ImageIcon("src/resources/images/map1.jpg").getImage();
@@ -837,7 +854,7 @@ public class Board extends JPanel implements ActionListener {
     	//map3 = new ImageIcon("src/resources/images/map3.jpg").getImage();
     	trap = new ImageIcon("src/resources/images/trap.png").getImage();
        	health = new ImageIcon("src/resources/images/health.png").getImage();
-       	ghost = new ImageIcon("src/resources/images/ghost.jpg").getImage();
+       	ghost = new ImageIcon("src/resources/images/ghost.png").getImage();
        	pacman1 = new ImageIcon("src/resources/images/pacman.jpg").getImage();
         pacman2up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
         pacman3up = new ImageIcon("src/resources/images/pacman.jpg").getImage();
@@ -990,11 +1007,8 @@ public class Board extends JPanel implements ActionListener {
                     frzTimer.start();
                 }
                } else if(key == 'r' || key == 'R') {
-               	if(score >= 150)
-               	{
-               		score-=150;
                		N_GHOSTS--;
-               	}
+               	
                }
             } else {
                 if (key == 's' || key == 'S') {
